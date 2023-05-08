@@ -1,15 +1,16 @@
 const User = require('../models/User');
-// const bcrypt = require('bcrypt');
-// const jwt = require('jsonwebtoken');
-// const saltRound = 10;
+
 
 
 // rendering home page
 module.exports.homepage = function(req, res) {
-    return res.render('home');
-}
+        if (req.isAuthenticated()) {
+            return res.render('home');
 
-// Rendering signup  page
+        }
+        return res.redirect('/login');
+    }
+    // Rendering signup  page
 module.exports.signupPage = function(req, res) {
     if (req.isAuthenticated()) {
         return res.redirect('/home');
@@ -81,6 +82,8 @@ module.exports.signin = async(req, res) => {
 }
 
 
+
+// password reser functionality
 module.exports.reset = async(req, res) => {
     const { email, oldpassword, newpassword } = req.body
 
@@ -88,13 +91,14 @@ module.exports.reset = async(req, res) => {
     if (!user) {
         req.flash('error', 'user not exist');
         console.log('user not exist');
-        return;
+        return req.redirect('/reset');
     }
+    // check password exist database or not
     if (user.password !== oldpassword) {
-        // console.log(user.password, oldpassword);
+
         req.flash('error', 'current password does not match');
         console.log('current password does not match');
-        return;
+        return res.redirect('/reset');
 
     }
     user.password = newpassword;
@@ -119,7 +123,7 @@ module.exports.destroy = function(req, res, next) {
         if (error) {
             return next(error);
         }
-        // req.flash('success', 'You have logged out');
+        req.flash('success', 'You have logged out');
         res.redirect('/');
     })
 }
